@@ -210,7 +210,7 @@
   (queue-for-playing! h (clip ding 0 10000) 20000)
   (queue-for-playing! h ding 18000)
   (check-equal? (heap-count h) 2)
-  (check-equal? (heap-min h) (entry ding 18000 (+ 18000 44100)))
+  (check-equal? (heap-min h) (entry ding 18000 (+ 18000 (rs-frames ding))))
   (heap-remove-min! h)
   (check rs-equal?
          (entry-sound (heap-min h))
