@@ -4,6 +4,14 @@
 
 (require racket/file)
 
+(require/typed framework/preferences
+               [preferences:set-default
+                (Symbol Any (Any -> Boolean) -> Void)]
+               [preferences:get
+                (Symbol -> Any)]
+               [preferences:set
+                (Symbol Any -> Void)])
+
 (provide get-fr-pref
          set-fr-pref!
          LEGAL-DEFAULT-FRS)
@@ -24,26 +32,28 @@
 (: RESET-FR Real)
 (define RESET-FR 44100)
 
-;; the name used in the prefs file to associated the FR with:
-(define PREF-NAME 'rsound:default-frame-rate)
-
 (unless (member RESET-FR LEGAL-DEFAULT-FRS)
   (error 'rsound-prefs
          "internal error: default fr pref (~e) is not one of the legal ones: ~e"
          RESET-FR LEGAL-DEFAULT-FRS))
 
-;; get the value of the pref. Reset it to RESET-FR if it's not one of
-;; the legal ones.
+;; the name used in the prefs file to associated the FR with:
+(define PREF-NAME 'rsound:default-frame-rate)
+
+(preferences:set-default
+ PREF-NAME
+ RESET-FR
+ (λ (v)
+   (and (real? v)
+        ;; coerce non-#f to #t:
+        (not (not ((inst member Any Any)
+                   v LEGAL-DEFAULT-FRS))))))
+
+
+;; get the value of the pref.
 (: get-fr-pref (-> Real))
 (define (get-fr-pref)
-  (define FR-pref-from-file (get-preference PREF-NAME))
-  (cond [(member FR-pref-from-file LEGAL-DEFAULT-FRS)
-         ;; invariant: membership in a list of reals means it must
-         ;; be a real. TR can't prove this...
-         (cast FR-pref-from-file Real)]
-        [else
-         (set-fr-pref! RESET-FR)
-         RESET-FR]))
+  (cast (preferences:get PREF-NAME) Real))
 
 ;; set the fr pref stored in the file.
 ;; WARNING: calling this outside of the preferences panel will
