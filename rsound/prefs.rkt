@@ -66,5 +66,5 @@
                           (format "frame rate from legal list (~e)"
                                   LEGAL-DEFAULT-FRS)
                           0 fr))
-  (put-preferences (list PREF-NAME)
-                   (list fr)))
+  (preferences:set PREF-NAME
+                   fr))
